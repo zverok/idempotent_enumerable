@@ -3,8 +3,21 @@ require 'rspec/its'
 require 'idempotent_enumerable'
 
 RSpec.describe IdempotentEnumerable do
+  shared_examples 'method' do |method, *arg, block, expected|
+    context method do
+      subject { collection.send(method, *arg, &block) }
+
+      it { is_expected.to be_a collection_class }
+      its(:to_a) { is_expected.to eq expected }
+    end
+  end
+
   let(:collection_class) {
     Class.new {
+      def self.inspect
+        '<Test Class>'
+      end
+
       def initialize(ary)
         @ary = ary.dup
       end
@@ -30,36 +43,22 @@ RSpec.describe IdempotentEnumerable do
   describe '#grep'
   describe '#grep_v'
   describe '#group_by'
-  describe '#max(n)'
-  describe '#max_by(n)'
-  describe '#min(n)'
-  describe '#min_by(n)'
   describe '#partition'
-  describe '#sort'
-  describe '#sort_by' do
-    subject { collection.sort_by { |i| -i } }
 
-    it { is_expected.to be_a collection_class }
-    its(:to_a) { is_expected.to eq [5, 4, 3, 2, 1] }
-  end
+  it_behaves_like 'method', :grep, :odd?.to_proc, nil, [1, 3, 5]
+  it_behaves_like 'method', :grep_v, :odd?.to_proc, nil, [2, 4]
+  it_behaves_like 'method', :max, 3, nil, [5, 4, 3]
+  it_behaves_like 'method', :max_by, 3, ->(i) { -i }, [1, 2, 3]
+  it_behaves_like 'method', :min, 3, nil, [1, 2, 3]
+  it_behaves_like 'method', :min_by, 3, ->(i) { -i }, [5, 4, 3]
+  it_behaves_like 'method', :reject, :odd?, [2, 4]
+  it_behaves_like 'method', :select, :odd?, [1, 3, 5]
+  it_behaves_like 'method', :sort, nil, [1, 2, 3, 4, 5]
+  it_behaves_like 'method', :sort_by, ->(i) { -i }, [5, 4, 3, 2, 1]
 
   describe '#take'
   describe '#take_while'
   describe '#uniq'
-
-  describe '#reject' do
-    subject { collection.reject(&:odd?) }
-
-    it { is_expected.to be_a collection_class }
-    its(:to_a) { is_expected.to eq [2, 4] }
-  end
-
-  describe '#select' do
-    subject { collection.select(&:odd?) }
-
-    it { is_expected.to be_a collection_class }
-    its(:to_a) { is_expected.to eq [1, 3, 5] }
-  end
 
   # TODO: what with "just enumerator" form of the methods?.. Enumerator#to_original or something?..
 

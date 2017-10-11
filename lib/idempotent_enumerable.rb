@@ -15,15 +15,43 @@ module IdempotentEnumerable
     end
   end
 
-  DEFAULT_METHOD_LIST = %i[
+  SIMPLE_METHOD_LIST = %i[
     reject
     select
     sort
     sort_by
   ].freeze
 
-  DEFAULT_METHOD_LIST.each do |method|
+  SIMPLE_METHOD_LIST.each do |method|
     define_method(method) { |*arg, &block| idempotently_construct(each(*arg).send(method, &block)) }
+  end
+
+  def min(num = nil)
+    return super unless num
+    idempotently_construct(each.min(num))
+  end
+
+  def min_by(num = nil, &block)
+    return super unless num
+    idempotently_construct(each.min_by(num, &block))
+  end
+
+  def max(num = nil)
+    return super unless num
+    idempotently_construct(each.max(num))
+  end
+
+  def max_by(num = nil, &block)
+    return super unless num
+    idempotently_construct(each.max_by(num, &block))
+  end
+
+  def grep(pattern, *arg, &block)
+    idempotently_construct(each(*arg).grep(pattern, &block))
+  end
+
+  def grep_v(pattern, *arg, &block)
+    idempotently_construct(each(*arg).grep_v(pattern, &block))
   end
 
   private
