@@ -17,6 +17,8 @@ RSpec.describe IdempotentEnumerable do
     end
   end
 
+  subject(:collection) { collection_class.new((1..5).to_a) }
+
   let(:collection_class) {
     Class.new {
       def self.inspect
@@ -38,8 +40,6 @@ RSpec.describe IdempotentEnumerable do
       include IdempotentEnumerable
     }
   }
-
-  subject(:collection) { collection_class.new((1..5).to_a) }
 
   describe '#chunk'
   describe '#group_by'
@@ -63,8 +63,9 @@ RSpec.describe IdempotentEnumerable do
 
   if RUBY_VERSION >= '2.4'
     context 'non-unique collection' do
-      subject(:collection) { collection_class.new([1,2,1,3,2]) }
-      it_behaves_like 'method', :uniq, nil, [1,2,3]
+      subject(:collection) { collection_class.new([1, 2, 1, 3, 2]) }
+
+      it_behaves_like 'method', :uniq, nil, [1, 2, 3]
     end
   end
 
@@ -80,6 +81,7 @@ RSpec.describe IdempotentEnumerable do
       end
     }
     subject { collection.select(1, &:odd?) }
+
     it { is_expected.to be_a collection_class }
     its(:to_a) { is_expected.to eq [3, 5] } # 2 + 1 & 4 + 1
 
@@ -94,6 +96,8 @@ RSpec.describe IdempotentEnumerable do
 
   describe 'settings' do
     describe 'custom constructor' do
+      subject { collection.select(&:odd?) }
+
       let(:collection_class) {
         Class.new {
           def self.from_a(ary)
@@ -118,7 +122,6 @@ RSpec.describe IdempotentEnumerable do
       }
       let(:collection) { collection_class.new(1, 2, 3, 4, 5) }
 
-      subject { collection.select(&:odd?) }
       it { is_expected.to be_a collection_class }
       its(:to_a) { is_expected.to eq [1, 3, 5] }
     end

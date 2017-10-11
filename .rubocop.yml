@@ -1,0 +1,37 @@
+inherit_from: .rubocop_todo.yml
+require: rubocop-rspec
+
+AllCops:
+  Include:
+    - 'lib/**/*'
+    - 'spec/**/*'
+  Exclude:
+    - 'benchmarks/**/*'
+    - 'tmp/**/*'
+    - Gemfile
+    - Rakefile
+    - '*.gemspec'
+  DisplayCopNames: true
+
+Metrics/LineLength:
+  Max: 100
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+
+RSpec/InstanceVariable:
+  Enabled: false
+
+Style/BlockDelimiters:
+  Exclude:
+    - 'spec/**/*'
+
+Style/Documentation:
+  Enabled: false
+
+RSpec/PredicateMatcher:
+  Enabled: false
+
+RSpec/EmptyExampleGroup:
+  Enabled: false

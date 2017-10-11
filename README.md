@@ -73,7 +73,7 @@ df.select(:column) { |col| col.sum > 6 }
 
 ## Performance penalty
 
-...is, of course, present, but not that awful (depends on your standards).
+...is, of course, present, yet not that awful (depends on your standards).
 
 ```ruby
 require 'benchmark/ips'
@@ -94,6 +94,7 @@ end
 ```
 
 Output:
+
 ```
 Warming up --------------------------------------
           Enumerable    10.681k i/100ms
@@ -106,3 +107,11 @@ Comparison:
           Enumerable:   112134.2 i/s
 IdempotentEnumerable:    42196.6 i/s - 2.66x  slower
 ```
+
+## Author
+
+[Victor Shepelev](http://zverok.github.io/)
+
+## License
+
+MIT
