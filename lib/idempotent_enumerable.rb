@@ -16,14 +16,26 @@ module IdempotentEnumerable
   end
 
   SIMPLE_METHOD_LIST = %i[
+    drop_while
     reject
     select
     sort
     sort_by
+    take_while
+    uniq
   ].freeze
 
   SIMPLE_METHOD_LIST.each do |method|
     define_method(method) { |*arg, &block| idempotently_construct(each(*arg).send(method, &block)) }
+  end
+
+  def drop(num, *arg)
+    idempotently_construct(each(*arg).drop(num))
+  end
+
+  def first(num = nil)
+    return super() unless num
+    idempotently_construct(each.first(num))
   end
 
   def min(num = nil)
@@ -52,6 +64,10 @@ module IdempotentEnumerable
 
   def grep_v(pattern, *arg, &block)
     idempotently_construct(each(*arg).grep_v(pattern, &block))
+  end
+
+  def take(num, *arg)
+    idempotently_construct(each(*arg).take(num))
   end
 
   private
