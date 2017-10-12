@@ -1,4 +1,6 @@
-**IdempotentEnumerable** is like Ruby's core `Enumerable` but tries to preserve the class of the
+# IdempotentEnumerable
+
+`IdempotentEnumerable` is like Ruby core's `Enumerable` but tries to preserve the class of the
 collection it included in, where reasonable.
 
 ## Features/Showcase
@@ -12,14 +14,14 @@ s.reject(&:odd?)
 # => [2, 4] -- FFFUUUU
 
 require 'idempotent_enumerable'
-
-class Set
-  include IdempotentEnumerable
-end
+Set.include IdempotentEnumerable
 
 s.reject(&:odd?)
 # => #<Set: {2, 4}> -- Nice!
 ```
+
+`IdempotentEnumerable` relies on fact your `each` method returns an instance of `Enumerator` (or
+other `Enumerable` object) when called without block. Which, honestly, it should do anyways.
 
 To construct back an instance of original class, `IdempotentEnumerable` relies on the fact
 `OriginalClass.new(array)` call will work. But, if your class provides another way for construction
@@ -31,19 +33,17 @@ h = {a: 1, b: 2, c: 3}
 h.first(2)
 # => [[:a, 1], [:b, 2]]
 
-# To make hash from this array, one should use `Hash[array]` notation.
+Hash.include IdempotentEnumerable
 
-class Hash
-  include IdempotentEnumerable
-  idempotent_enumerable.constructor = :[]
-end
+# To make hash from this array, one should use `Hash[array]` notation.
+Hash.idempotent_enumerable.constructor = :[]
 
 h.first(2)
 # => {:a=>1, :b=>2}
 ```
 
 `IdempotentEnumerable` also supports complicated collections, with `each` accepting additional
-arguments ([daru](https://github.com/SciRuby/daru) used as an example):
+arguments out of the box ([daru](https://github.com/SciRuby/daru) used as an example):
 
 ```ruby
 require 'daru'
@@ -70,6 +70,8 @@ df.select(:column) { |col| col.sum > 6 }
 
 
 * `uniq` (RUBY_VERSION >= 2.4).
+
+**NB**:
 
 ## Performance penalty
 

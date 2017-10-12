@@ -1,9 +1,10 @@
 require 'rspec/its'
+require 'saharspec/its/map'
 
 require 'idempotent_enumerable'
 
 RSpec.describe IdempotentEnumerable do
-  shared_examples 'method' do |method, *arg, block, expected, empty: nil|
+  shared_examples 'return collection' do |method, *arg, block, expected, empty: nil|
     describe "##{method}" do
       subject { collection.send(method, *arg, &block) }
 
@@ -12,6 +13,29 @@ RSpec.describe IdempotentEnumerable do
       if empty
         context 'without arguments' do
           specify { expect(collection.send(method, &block)).to eq empty }
+        end
+      end
+
+      if block
+        context 'without block' do
+          subject { collection.send(method, *arg) }
+          it { is_expected.to be_a Enumerator }
+        end
+      end
+    end
+  end
+
+  shared_examples 'return array of collections' do |method, *arg, block, expected|
+    describe "##{method}" do
+      subject { collection.send(method, *arg, &block).to_a }
+
+      it { is_expected.to all be_a collection_class }
+      its_map(:to_a) { is_expected.to eq expected }
+
+      if block
+        context 'without block' do
+          subject { collection.send(method, *arg) }
+          it { is_expected.to be_a Enumerator }
         end
       end
     end
@@ -42,30 +66,41 @@ RSpec.describe IdempotentEnumerable do
   }
 
   describe '#chunk'
-  describe '#group_by'
-  describe '#partition'
+  describe '#chunk_while'
+  describe '#slice_after'
+  describe '#slice_before'
+  describe '#slice_when'
 
-  it_behaves_like 'method', :drop, 4, nil, [5]
-  it_behaves_like 'method', :drop_while, :odd?, [2, 3, 4, 5]
-  it_behaves_like 'method', :first, 2, nil, [1, 2], empty: 1
-  it_behaves_like 'method', :grep, :odd?.to_proc, nil, [1, 3, 5]
-  it_behaves_like 'method', :grep_v, :odd?.to_proc, nil, [2, 4]
-  it_behaves_like 'method', :max, 3, nil, [5, 4, 3], empty: 5
-  it_behaves_like 'method', :max_by, 3, :-@, [1, 2, 3], empty: 1
-  it_behaves_like 'method', :min, 3, nil, [1, 2, 3], empty: 1
-  it_behaves_like 'method', :min_by, 3, :-@, [5, 4, 3], empty: 5
-  it_behaves_like 'method', :reject, :odd?, [2, 4]
-  it_behaves_like 'method', :select, :odd?, [1, 3, 5]
-  it_behaves_like 'method', :sort, nil, [1, 2, 3, 4, 5]
-  it_behaves_like 'method', :sort_by, ->(i) { -i }, [5, 4, 3, 2, 1]
-  it_behaves_like 'method', :take, 2, nil, [1, 2]
-  it_behaves_like 'method', :take_while, :odd?, [1]
+  it_behaves_like 'return collection', :drop, 4, nil, [5]
+  it_behaves_like 'return collection', :drop_while, :odd?, [2, 3, 4, 5]
+  it_behaves_like 'return array of collections', :each_cons, 2, nil, [[1, 2], [2, 3], [3, 4], [4, 5]]
+  it_behaves_like 'return array of collections', :each_slice, 2, nil, [[1, 2], [3, 4], [5]]
+  it_behaves_like 'return collection', :first, 2, nil, [1, 2], empty: 1
+  it_behaves_like 'return collection', :grep, :odd?.to_proc, nil, [1, 3, 5]
+  it_behaves_like 'return collection', :grep_v, :odd?.to_proc, nil, [2, 4]
+  it_behaves_like 'return collection', :max, 3, nil, [5, 4, 3], empty: 5
+  it_behaves_like 'return collection', :max_by, 3, :-@, [1, 2, 3], empty: 1
+  it_behaves_like 'return collection', :min, 3, nil, [1, 2, 3], empty: 1
+  it_behaves_like 'return collection', :min_by, 3, :-@, [5, 4, 3], empty: 5
+  it_behaves_like 'return array of collections', :partition, :odd?, [[1, 3, 5], [2, 4]]
+  it_behaves_like 'return collection', :reject, :odd?, [2, 4]
+  it_behaves_like 'return collection', :select, :odd?, [1, 3, 5]
+  it_behaves_like 'return collection', :sort, nil, [1, 2, 3, 4, 5]
+  it_behaves_like 'return collection', :sort_by, ->(i) { -i }, [5, 4, 3, 2, 1]
+  it_behaves_like 'return collection', :take, 2, nil, [1, 2]
+  it_behaves_like 'return collection', :take_while, :odd?, [1]
+
+  describe '#group_by' do
+    subject { collection.group_by(&:odd?) }
+    its(:keys) { are_expected.to eq [true, false] }
+    its(:values) { are_expected.to all be_a collection_class }
+  end
 
   if RUBY_VERSION >= '2.4'
     context 'non-unique collection' do
       subject(:collection) { collection_class.new([1, 2, 1, 3, 2]) }
 
-      it_behaves_like 'method', :uniq, nil, [1, 2, 3]
+      it_behaves_like 'return collection', :uniq, nil, [1, 2, 3]
     end
   end
 
@@ -127,6 +162,7 @@ RSpec.describe IdempotentEnumerable do
     end
 
     describe 'update method list' do
+      # map, flat_map
     end
   end
 end
