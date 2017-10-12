@@ -21,14 +21,23 @@ module IdempotentEnumerable
     select
     sort_by
     take_while
-    uniq
   ].freeze
 
   SIMPLE_METHODS.each do |method|
-    define_method(method) { |*arg, &block|
+    define_method(method) do |*arg, &block|
       return to_enum(method, *arg) unless block
       idempotently_construct(each(*arg).send(method, &block))
-    }
+    end
+  end
+
+  def chunk(*arg, &block)
+    # FIXME: should return enumerator
+    return to_enum(:chunk, *arg) unless block
+    each(*arg).chunk(&block).map { |key, group| [key, idempotently_construct(group)] }
+  end
+
+  def chunk_while(*arg, &block)
+    idempotent_enumerator(each(*arg).chunk_while(&block))
   end
 
   def drop(num, *arg)
@@ -89,6 +98,18 @@ module IdempotentEnumerable
     each(*arg).partition(&block).map(&method(:idempotently_construct))
   end
 
+  def slice_after(pattern = nil, &block)
+    idempotent_enumerator(pattern ? each.slice_after(pattern) : each.slice_after(&block))
+  end
+
+  def slice_before(pattern = nil, &block)
+    idempotent_enumerator(pattern ? each.slice_before(pattern) : each.slice_before(&block))
+  end
+
+  def slice_when(*arg, &block)
+    idempotent_enumerator(each(*arg).slice_when(&block))
+  end
+
   def sort(*arg, &block)
     idempotently_construct(each(*arg).sort(&block))
   end
@@ -97,9 +118,17 @@ module IdempotentEnumerable
     idempotently_construct(each(*arg).take(num))
   end
 
+  def uniq(*arg, &block)
+    idempotently_construct(each(*arg).sort(&block))
+  end
+
   private
 
   def idempotently_construct(array)
     self.class.send(self.class.idempotent_enumerable.constructor, array)
+  end
+
+  def idempotent_enumerator(enumerator)
+    Enumerator.new { |y| enumerator.each { |chunk| y << idempotently_construct(chunk) } }
   end
 end

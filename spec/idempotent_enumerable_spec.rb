@@ -1,3 +1,5 @@
+require 'prime'
+
 require 'rspec/its'
 require 'saharspec/its/map'
 
@@ -19,22 +21,24 @@ RSpec.describe IdempotentEnumerable do
       if block
         context 'without block' do
           subject { collection.send(method, *arg) }
+
           it { is_expected.to be_a Enumerator }
         end
       end
     end
   end
 
-  shared_examples 'return array of collections' do |method, *arg, block, expected|
+  shared_examples 'return array of collections' do |method, *arg, block, expected, blockless: true|
     describe "##{method}" do
       subject { collection.send(method, *arg, &block).to_a }
 
       it { is_expected.to all be_a collection_class }
       its_map(:to_a) { is_expected.to eq expected }
 
-      if block
+      if block && blockless
         context 'without block' do
           subject { collection.send(method, *arg) }
+
           it { is_expected.to be_a Enumerator }
         end
       end
@@ -65,12 +69,8 @@ RSpec.describe IdempotentEnumerable do
     }
   }
 
-  describe '#chunk'
-  describe '#chunk_while'
-  describe '#slice_after'
-  describe '#slice_before'
-  describe '#slice_when'
-
+  it_behaves_like 'return array of collections', :chunk_while, ->(a, b) { (a + b).prime? },
+                  [[1, 2, 3, 4], [5]], blockless: false
   it_behaves_like 'return collection', :drop, 4, nil, [5]
   it_behaves_like 'return collection', :drop_while, :odd?, [2, 3, 4, 5]
   it_behaves_like 'return array of collections', :each_cons, 2, nil, [[1, 2], [2, 3], [3, 4], [4, 5]]
@@ -85,13 +85,32 @@ RSpec.describe IdempotentEnumerable do
   it_behaves_like 'return array of collections', :partition, :odd?, [[1, 3, 5], [2, 4]]
   it_behaves_like 'return collection', :reject, :odd?, [2, 4]
   it_behaves_like 'return collection', :select, :odd?, [1, 3, 5]
+  it_behaves_like 'return array of collections', :slice_after, :even?.to_proc, nil,
+                  [[1, 2], [3, 4], [5]]
+  it_behaves_like 'return array of collections', :slice_after, :even?,
+                  [[1, 2], [3, 4], [5]], blockless: false
+  it_behaves_like 'return array of collections', :slice_before, :even?.to_proc, nil,
+                  [[1], [2, 3], [4, 5]]
+  it_behaves_like 'return array of collections', :slice_before, :even?,
+                  [[1], [2, 3], [4, 5]], blockless: false
+  it_behaves_like 'return array of collections', :slice_when, ->(a, b) { ((a + b) % 3).zero? },
+                  [[1], [2, 3, 4], [5]], blockless: false
   it_behaves_like 'return collection', :sort, nil, [1, 2, 3, 4, 5]
   it_behaves_like 'return collection', :sort_by, ->(i) { -i }, [5, 4, 3, 2, 1]
   it_behaves_like 'return collection', :take, 2, nil, [1, 2]
   it_behaves_like 'return collection', :take_while, :odd?, [1]
 
+  describe '#chunk' do
+    subject { collection.chunk(&:odd?) }
+
+    its_map(:first) { are_expected.to eq [true, false, true, false, true] }
+    its_map(:last) { are_expected.to all be_a collection_class }
+    its_map(:'last.to_a') { are_expected.to eq [[1], [2], [3], [4], [5]] }
+  end
+
   describe '#group_by' do
     subject { collection.group_by(&:odd?) }
+
     its(:keys) { are_expected.to eq [true, false] }
     its(:values) { are_expected.to all be_a collection_class }
   end
