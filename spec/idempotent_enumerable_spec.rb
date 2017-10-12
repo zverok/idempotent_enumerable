@@ -152,8 +152,8 @@ RSpec.describe IdempotentEnumerable do
     describe 'custom constructor' do
       subject { collection.select(&:odd?) }
 
-      let(:collection_class) {
-        Class.new {
+      before {
+        collection_class.module_eval {
           def self.from_a(ary)
             new(*ary)
           end
@@ -162,15 +162,6 @@ RSpec.describe IdempotentEnumerable do
             @ary = ary
           end
 
-          def each(&block)
-            @ary.each(&block)
-          end
-
-          def to_a
-            @ary
-          end
-
-          include IdempotentEnumerable
           idempotent_enumerable.constructor = :from_a
         }
       }
@@ -181,7 +172,69 @@ RSpec.describe IdempotentEnumerable do
     end
 
     describe 'update method list' do
-      # map, flat_map
+      context 'redefine all' do
+        before {
+          collection_class.module_eval {
+            idempotent_enumerable.redefine_map!
+          }
+        }
+
+        context '#map' do
+          subject { collection.map(&:to_s) }
+
+          it { is_expected.to be_a collection_class }
+          its(:to_a) { is_expected.to eq %w[1 2 3 4 5] }
+        end
+
+        context '#flat_map' do
+          subject { collection.flat_map { |i| [i, i] } }
+
+          it { is_expected.to be_a collection_class }
+          its(:to_a) { is_expected.to eq [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] }
+        end
+      end
+
+      context 'conditional' do
+        before {
+          collection_class.module_eval {
+            idempotent_enumerable.redefine_map! all: ->(i) { i.is_a?(Numeric) }
+          }
+        }
+
+        context 'matches' do
+          subject { collection.map(&:-@) }
+
+          it { is_expected.to be_a collection_class }
+          its(:to_a) { is_expected.to eq [-1, -2, -3, -4, -5] }
+        end
+
+        context 'not matches' do
+          subject { collection.map(&:to_s) }
+
+          it { is_expected.to eq %w[1 2 3 4 5] }
+        end
+      end
+
+      context 'selective' do
+        before {
+          collection_class.module_eval {
+            idempotent_enumerable.redefine_map! only: :map
+          }
+        }
+
+        context '#map' do
+          subject { collection.map(&:to_s) }
+
+          it { is_expected.to be_a collection_class }
+          its(:to_a) { is_expected.to eq %w[1 2 3 4 5] }
+        end
+
+        context '#flat_map' do
+          subject { collection.flat_map { |i| [i, i] } }
+
+          it { is_expected.to eq [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] }
+        end
+      end
     end
   end
 end
