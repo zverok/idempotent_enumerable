@@ -1,5 +1,10 @@
 # IdempotentEnumerable
 
+[![Gem Version](https://badge.fury.io/rb/idempotent_enumerable.svg)](http://badge.fury.io/rb/idempotent_enumerable)
+[![Build Status](https://travis-ci.org/zverok/idempotent_enumerable.svg?branch=master)](https://travis-ci.org/zverok/idempotent_enumerable)
+[![Coverage Status](https://coveralls.io/repos/zverok/idempotent_enumerable/badge.svg?branch=master)](https://coveralls.io/r/zverok/idempotent_enumerable?branch=master)
+
+
 `IdempotentEnumerable` is like Ruby core's `Enumerable` but tries to preserve the class of the
 collection it included in, where reasonable.
 
