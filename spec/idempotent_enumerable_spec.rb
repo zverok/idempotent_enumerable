@@ -6,42 +6,50 @@ require 'saharspec/its/map'
 require 'idempotent_enumerable'
 
 RSpec.describe IdempotentEnumerable do
-  shared_examples 'return collection' do |method, *arg, block, expected, empty: nil|
-    describe "##{method}" do
-      subject { collection.send(method, *arg, &block) }
+  shared_examples 'return collection' do |method, *arg, block, expected, empty: nil, since: nil, updated: nil|
+    if !since && !updated || RUBY_VERSION >= (since || updated)
+      describe "##{method}" do
+        subject { collection.send(method, *arg, &block) }
 
-      it { is_expected.to be_a collection_class }
-      its(:to_a) { is_expected.to eq expected }
-      if empty
-        context 'without arguments' do
-          specify { expect(collection.send(method, &block)).to eq empty }
+        it { is_expected.to be_a collection_class }
+        its(:to_a) { is_expected.to eq expected }
+        if empty
+          context 'without arguments' do
+            specify { expect(collection.send(method, &block)).to eq empty }
+          end
+        end
+
+        if block
+          context 'without block' do
+            subject { collection.send(method, *arg) }
+
+            it { is_expected.to be_a Enumerator }
+          end
         end
       end
-
-      if block
-        context 'without block' do
-          subject { collection.send(method, *arg) }
-
-          it { is_expected.to be_a Enumerator }
-        end
-      end
+    elsif since
+      it { is_expected.not_to respond_to(method) }
     end
   end
 
-  shared_examples 'return array of collections' do |method, *arg, block, expected, blockless: true|
-    describe "##{method}" do
-      subject { collection.send(method, *arg, &block).to_a }
+  shared_examples 'return array of collections' do |method, *arg, block, expected, blockless: true, since: nil|
+    if !since || RUBY_VERSION >= since
+      describe "##{method}" do
+        subject { collection.send(method, *arg, &block).to_a }
 
-      it { is_expected.to all be_a collection_class }
-      its_map(:to_a) { is_expected.to eq expected }
+        it { is_expected.to all be_a collection_class }
+        its_map(:to_a) { is_expected.to eq expected }
 
-      if block && blockless
-        context 'without block' do
-          subject { collection.send(method, *arg) }
+        if block && blockless
+          context 'without block' do
+            subject { collection.send(method, *arg) }
 
-          it { is_expected.to be_a Enumerator }
+            it { is_expected.to be_a Enumerator }
+          end
         end
       end
+    elsif since
+      it { is_expected.not_to respond_to(method) }
     end
   end
 
@@ -70,7 +78,7 @@ RSpec.describe IdempotentEnumerable do
   }
 
   it_behaves_like 'return array of collections', :chunk_while, ->(a, b) { (a + b).prime? },
-                  [[1, 2, 3, 4], [5]], blockless: false
+                  [[1, 2, 3, 4], [5]], blockless: false, since: '2.3'
   it_behaves_like 'return collection', :drop, 4, nil, [5]
   it_behaves_like 'return collection', :drop_while, :odd?, [2, 3, 4, 5]
   it_behaves_like 'return array of collections', :each_cons, 2, nil,
@@ -78,24 +86,24 @@ RSpec.describe IdempotentEnumerable do
   it_behaves_like 'return array of collections', :each_slice, 2, nil, [[1, 2], [3, 4], [5]]
   it_behaves_like 'return collection', :first, 2, nil, [1, 2], empty: 1
   it_behaves_like 'return collection', :grep, :odd?.to_proc, nil, [1, 3, 5]
-  it_behaves_like 'return collection', :grep_v, :odd?.to_proc, nil, [2, 4]
-  it_behaves_like 'return collection', :max, 3, nil, [5, 4, 3], empty: 5
-  it_behaves_like 'return collection', :max_by, 3, :-@, [1, 2, 3], empty: 1
-  it_behaves_like 'return collection', :min, 3, nil, [1, 2, 3], empty: 1
-  it_behaves_like 'return collection', :min_by, 3, :-@, [5, 4, 3], empty: 5
+  it_behaves_like 'return collection', :grep_v, :odd?.to_proc, nil, [2, 4], since: '2.3'
+  it_behaves_like 'return collection', :max, 3, nil, [5, 4, 3], empty: 5, updated: '2.2'
+  it_behaves_like 'return collection', :max_by, 3, :-@, [1, 2, 3], empty: 1, updated: '2.2'
+  it_behaves_like 'return collection', :min, 3, nil, [1, 2, 3], empty: 1, updated: '2.2'
+  it_behaves_like 'return collection', :min_by, 3, :-@, [5, 4, 3], empty: 5, updated: '2.2'
   it_behaves_like 'return array of collections', :partition, :odd?, [[1, 3, 5], [2, 4]]
   it_behaves_like 'return collection', :reject, :odd?, [2, 4]
   it_behaves_like 'return collection', :select, :odd?, [1, 3, 5]
   it_behaves_like 'return array of collections', :slice_after, :even?.to_proc, nil,
-                  [[1, 2], [3, 4], [5]]
+                  [[1, 2], [3, 4], [5]], since: '2.2'
   it_behaves_like 'return array of collections', :slice_after, :even?,
-                  [[1, 2], [3, 4], [5]], blockless: false
+                  [[1, 2], [3, 4], [5]], blockless: false, since: '2.2'
   it_behaves_like 'return array of collections', :slice_before, :even?.to_proc, nil,
                   [[1], [2, 3], [4, 5]]
   it_behaves_like 'return array of collections', :slice_before, :even?,
                   [[1], [2, 3], [4, 5]], blockless: false
   it_behaves_like 'return array of collections', :slice_when, ->(a, b) { ((a + b) % 3).zero? },
-                  [[1], [2, 3, 4], [5]], blockless: false
+                  [[1], [2, 3, 4], [5]], blockless: false, since: '2.2'
   it_behaves_like 'return collection', :sort, nil, [1, 2, 3, 4, 5]
   it_behaves_like 'return collection', :sort_by, ->(i) { -i }, [5, 4, 3, 2, 1]
   it_behaves_like 'return collection', :take, 2, nil, [1, 2]
@@ -125,8 +133,6 @@ RSpec.describe IdempotentEnumerable do
   else
     it { is_expected.not_to respond_to(:uniq) }
   end
-
-  # TODO: what with "just enumerator" form of the methods?.. Enumerator#to_original or something?..
 
   context 'when #each accepts arguments' do
     before {

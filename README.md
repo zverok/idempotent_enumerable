@@ -74,11 +74,11 @@ df.select(:column) { |col| col.sum > 6 }
 * [drop_while](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-drop_while);
 * [first](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-first) (when used with argument);
 * [grep](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-grep);
-* [grep_v](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-grep_v);
-* [max](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-max) (when used with argument);
-* [max_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-max_by) (when used with argument);
-* [min](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-min) (when used with argument);
-* [min_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-min_by) (when used with argument);
+* [grep_v](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-grep_v) (RUBY_VERSION >= 2.3);
+* [max](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-max) (when used with argument, RUBY_VERSION >= 2.2);
+* [max_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-max_by) (when used with argument, RUBY_VERSION >= 2.2);
+* [min](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-min) (when used with argument, RUBY_VERSION >= 2.2);
+* [min_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-min_by) (when used with argument, RUBY_VERSION >= 2.2);
 * [reduce](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-reduce);
 * [reject](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-reject);
 * [select](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-select);
@@ -104,15 +104,15 @@ set.each_slice(3).to_a
 ```
 
 * [chunk](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-chunk);
-* [chunk_while](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-chunk_while);
+* [chunk_while](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-chunk_while) (RUBY_VERSION >= 2.3);
 * [each_cons](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-each_cons);
 * [each_slice](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-each_slice);
 * [group_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-group_by) (returns hash with
   keys being group keys and values being original collection type);
 * [partition](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-partition);
-* [slice_after](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-slice_after);
+* [slice_after](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-slice_after) (RUBY_VERSION >= 2.2);
 * [slice_before](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-slice_before);
-* [slice_when](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-slice_when).
+* [slice_when](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-slice_when) (RUBY_VERSION >= 2.2).
 
 ### Optionally redefined methods
 

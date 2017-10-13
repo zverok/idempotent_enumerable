@@ -60,8 +60,10 @@ module IdempotentEnumerable
     each(*arg).chunk(&block).map { |key, group| [key, idempotently_construct(group)] }
   end
 
-  def chunk_while(*arg, &block)
-    idempotent_enumerator(each(*arg).chunk_while(&block))
+  if RUBY_VERSION >= '2.3.0'
+    def chunk_while(*arg, &block)
+      idempotent_enumerator(each(*arg).chunk_while(&block))
+    end
   end
 
   def drop(num, *arg)
@@ -87,8 +89,10 @@ module IdempotentEnumerable
     idempotently_construct(each(*arg).grep(pattern, &block))
   end
 
-  def grep_v(pattern, *arg, &block)
-    idempotently_construct(each(*arg).grep_v(pattern, &block))
+  if RUBY_VERSION >= '2.3.0'
+    def grep_v(pattern, *arg, &block)
+      idempotently_construct(each(*arg).grep_v(pattern, &block))
+    end
   end
 
   def group_by(*arg, &block)
@@ -122,16 +126,19 @@ module IdempotentEnumerable
     each(*arg).partition(&block).map(&method(:idempotently_construct))
   end
 
-  def slice_after(pattern = nil, &block)
-    idempotent_enumerator(pattern ? each.slice_after(pattern) : each.slice_after(&block))
-  end
-
   def slice_before(pattern = nil, &block)
     idempotent_enumerator(pattern ? each.slice_before(pattern) : each.slice_before(&block))
   end
 
-  def slice_when(*arg, &block)
-    idempotent_enumerator(each(*arg).slice_when(&block))
+  if RUBY_VERSION >= '2.2'
+    def slice_after(pattern = nil, &block)
+      idempotent_enumerator(pattern ? each.slice_after(pattern) : each.slice_after(&block))
+    end
+
+
+    def slice_when(*arg, &block)
+      idempotent_enumerator(each(*arg).slice_when(&block))
+    end
   end
 
   def sort(*arg, &block)
@@ -144,7 +151,7 @@ module IdempotentEnumerable
 
   if RUBY_VERSION >= '2.4.0'
     def uniq(*arg, &block)
-      idempotently_construct(each(*arg).sort(&block))
+      idempotently_construct(each(*arg).uniq(&block))
     end
   end
 
