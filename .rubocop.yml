@@ -15,12 +15,18 @@ AllCops:
 
 Metrics/LineLength:
   Max: 100
+  Exclude:
+    - 'spec/**/*'
 
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
 
 Style/BlockDelimiters:
+  Exclude:
+    - 'spec/**/*'
+
+Metrics/ParameterLists:
   Exclude:
     - 'spec/**/*'
 

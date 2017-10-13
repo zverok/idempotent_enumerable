@@ -1,53 +1,13 @@
 module IdempotentEnumerable
   include Enumerable
 
-  class Configurator
-    attr_writer :constructor
-
-    def initialize(host)
-      @host = host
-    end
-
-    def constructor
-      @constructor || :new
-    end
-
-    def redefine_map!(only: %i[map flat_map], all: nil)
-      only = Array(only)
-      redefine(:map, all) if only.include?(:map)
-      redefine(:flat_map, all) if only.include?(:flat_map)
-      self
-    end
-
-    private
-
-    def redefine(method, all)
-      @host.send(:define_method, method) do |*arg, &block|
-        res = each(*arg).send(method, &block)
-        if !all || res.all?(&all)
-          idempotently_construct(res)
-        else
-          res
-        end
-      end
-    end
-  end
-
   def self.included(klass)
     def klass.idempotent_enumerable
       @idempotent_enumerable ||= Configurator.new(self)
     end
   end
 
-  SIMPLE_METHODS = %i[
-    drop_while
-    reject
-    select
-    sort_by
-    take_while
-  ].freeze
-
-  SIMPLE_METHODS.each do |method|
+  %i[drop_while reject select sort_by take_while].each do |method|
     define_method(method) do |*arg, &block|
       return to_enum(method, *arg) unless block
       idempotently_construct(each(*arg).send(method, &block))
@@ -135,7 +95,6 @@ module IdempotentEnumerable
       idempotent_enumerator(pattern ? each.slice_after(pattern) : each.slice_after(&block))
     end
 
-
     def slice_when(*arg, &block)
       idempotent_enumerator(each(*arg).slice_when(&block))
     end
@@ -165,3 +124,5 @@ module IdempotentEnumerable
     Enumerator.new { |y| enumerator.each { |chunk| y << idempotently_construct(chunk) } }
   end
 end
+
+require_relative 'idempotent_enumerable/configurator'
