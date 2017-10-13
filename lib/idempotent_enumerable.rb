@@ -100,23 +100,23 @@ module IdempotentEnumerable
   end
 
   def min(num = nil)
-    return super unless num
+    return super() unless num
     idempotently_construct(each.min(num))
   end
 
   def min_by(num = nil, &block)
-    return super unless num
+    return super(&block) unless num
     return to_enum(:min_by) unless block
     idempotently_construct(each.min_by(num, &block))
   end
 
   def max(num = nil)
-    return super unless num
+    return super() unless num
     idempotently_construct(each.max(num))
   end
 
   def max_by(num = nil, &block)
-    return super unless num
+    return super(&block) unless num
     return to_enum(:max_by) unless block
     idempotently_construct(each.max_by(num, &block))
   end
