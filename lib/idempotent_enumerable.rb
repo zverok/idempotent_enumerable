@@ -142,8 +142,10 @@ module IdempotentEnumerable
     idempotently_construct(each(*arg).take(num))
   end
 
-  def uniq(*arg, &block)
-    idempotently_construct(each(*arg).sort(&block))
+  if RUBY_VERSION >= '2.4.0'
+    def uniq(*arg, &block)
+      idempotently_construct(each(*arg).sort(&block))
+    end
   end
 
   private

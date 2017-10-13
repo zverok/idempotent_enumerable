@@ -122,6 +122,8 @@ RSpec.describe IdempotentEnumerable do
 
       it_behaves_like 'return collection', :uniq, nil, [1, 2, 3]
     end
+  else
+    it { is_expected.not_to respond_to(:uniq) }
   end
 
   # TODO: what with "just enumerator" form of the methods?.. Enumerator#to_original or something?..
