@@ -117,8 +117,9 @@ set.each_slice(3).to_a
 ### Optionally redefined methods
 
 Generally speaking, `map` and `flat_map` can return collection of anything, probably not coercible
-to original collection type, so they are **not** redefined by default. But they can be redefined
-with optional `idempotent_enumerable.redefine_map!` call:
+to original collection type, so they are **not** redefined by default.
+
+But they can be redefined with optional `idempotent_enumerable.redefine_map!` call:
 
 ```ruby
 Set.include IdempotentEnumerable

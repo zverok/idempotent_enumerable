@@ -1,0 +1,17 @@
+cache: bundler
+language: ruby
+rvm:
+  - "2.1"
+  - "2.2"
+  - "2.3"
+  - "2.4"
+  - ruby-head
+  - jruby-9.1.6.0
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+install:
+  - bundle install --retry=3
+script:
+  - bundle exec rspec
+  - bundle exec rubocop
