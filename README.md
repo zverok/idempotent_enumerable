@@ -68,7 +68,7 @@ df.select(:column) { |col| col.sum > 6 }
 
 ## List of methods redefined
 
-### Methods that return one collection
+### Methods that return single collection
 
 * [drop](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-drop);
 * [drop_while](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-drop_while);
