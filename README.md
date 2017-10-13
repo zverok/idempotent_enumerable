@@ -35,7 +35,7 @@ h.first(2)
 
 Hash.include IdempotentEnumerable
 
-# To make hash from this array, one should use `Hash[array]` notation.
+# To make hash from array of pairs, one should use `Hash[array]` notation.
 Hash.idempotent_enumerable.constructor = :[]
 
 h.first(2)
@@ -43,7 +43,7 @@ h.first(2)
 ```
 
 `IdempotentEnumerable` also supports complicated collections, with `each` accepting additional
-arguments out of the box ([daru](https://github.com/SciRuby/daru) used as an example):
+arguments, out of the box ([daru](https://github.com/SciRuby/daru) used as an example):
 
 ```ruby
 require 'daru'
@@ -68,10 +68,85 @@ df.select(:column) { |col| col.sum > 6 }
 
 ## List of methods redefined
 
+### Methods that return one collection
 
-* `uniq` (RUBY_VERSION >= 2.4).
+* [drop](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-drop);
+* [drop_while](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-drop_while);
+* [first](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-first) (when used with argument);
+* [grep](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-grep);
+* [grep_v](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-grep_v);
+* [max](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-max) (when used with argument);
+* [max_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-max_by) (when used with argument);
+* [min](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-min) (when used with argument);
+* [min_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-min_by) (when used with argument);
+* [reduce](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-reduce);
+* [reject](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-reject);
+* [select](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-select);
+* [sort](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-sort);
+* [sort_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-sort_by);
+* [take](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-take);
+* [take_while](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-take_while);
+* [uniq](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-uniq)  (RUBY_VERSION >= 2.4).
 
-**NB**:
+### Methods that return (or emit) several collections
+
+For methods like [partition](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-partition) that
+somehow split an enumerable sequence into several, `IdempotentEnumerable` preserves the type of
+**internal** sequence. E.g.:
+
+```ruby
+Set.include IdempotentEnumerable
+set = Set.new(1..5)
+set.partition(&:odd?)
+# => [#<Set: {1, 3, 5}>, #<Set: {2, 4}>]
+set.each_slice(3).to_a
+# => [#<Set: {1, 2, 3}>, #<Set: {4, 5}>]
+```
+
+* [chunk](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-chunk);
+* [chunk_while](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-chunk_while);
+* [each_cons](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-each_cons);
+* [each_slice](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-each_slice);
+* [group_by](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-group_by) (returns hash with
+  keys being group keys and values being original collection type);
+* [partition](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-partition);
+* [slice_after](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-slice_after);
+* [slice_before](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-slice_before);
+* [slice_when](https://ruby-doc.org/core-2.4.2/Enumerable.html#method-i-slice_when).
+
+### Optionally redefined methods
+
+Generally speaking, `map` and `flat_map` can return collection of anything, probably not coercible
+to original collection type, so they are **not** redefined by default. But they can be redefined
+with optional `idempotent_enumerable.redefine_map!` call:
+
+```ruby
+Set.include IdempotentEnumerable
+set = Set.new(1..5)
+set.map(&:to_s)
+# => ["1", "2", "3", "4", "5"]
+Set.idempotent_enumerable.redefine_map!
+set.map(&:to_s)
+# => #<Set: {"1", "2", "3", "4", "5"}>
+```
+
+`redefine_map!` has two options:
+* `only:` (by default `[:map, :flat_map]`) to specify that you want to redefine only one of those
+  methods;
+* `all:` to specify which condition all elements of produced collection should satisfy to coerce.
+
+Example of the latter:
+
+```ruby
+Hash.include IdempotentEnumerable
+Hash.idempotent_enumerable.constructor = :[]
+# only convert back to hash if `map` have returned array of pairs
+Hash.idempotent_enumerable.redefine_map! all: ->(e) { e.is_a?(Array) && e.count == 2 }
+{a: 1, b: 2}.map(&:join)
+# => ["a1", "b2"]  -- no coercion
+{a: 1, b: 2}.map { |k, v| [k.to_s, v.to_s] }
+# => {"a"=>"1", "b"=>"2"} -- coercion
+```
 
 ## Performance penalty
 

@@ -73,7 +73,8 @@ RSpec.describe IdempotentEnumerable do
                   [[1, 2, 3, 4], [5]], blockless: false
   it_behaves_like 'return collection', :drop, 4, nil, [5]
   it_behaves_like 'return collection', :drop_while, :odd?, [2, 3, 4, 5]
-  it_behaves_like 'return array of collections', :each_cons, 2, nil, [[1, 2], [2, 3], [3, 4], [4, 5]]
+  it_behaves_like 'return array of collections', :each_cons, 2, nil,
+                  [[1, 2], [2, 3], [3, 4], [4, 5]]
   it_behaves_like 'return array of collections', :each_slice, 2, nil, [[1, 2], [3, 4], [5]]
   it_behaves_like 'return collection', :first, 2, nil, [1, 2], empty: 1
   it_behaves_like 'return collection', :grep, :odd?.to_proc, nil, [1, 3, 5]

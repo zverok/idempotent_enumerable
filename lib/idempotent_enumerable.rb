@@ -16,6 +16,7 @@ module IdempotentEnumerable
       only = Array(only)
       redefine(:map, all) if only.include?(:map)
       redefine(:flat_map, all) if only.include?(:flat_map)
+      self
     end
 
     private

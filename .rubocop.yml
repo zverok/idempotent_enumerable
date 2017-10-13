@@ -20,12 +20,12 @@ Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
 
-RSpec/InstanceVariable:
-  Enabled: false
-
 Style/BlockDelimiters:
   Exclude:
     - 'spec/**/*'
+
+RSpec/InstanceVariable:
+  Enabled: false
 
 Style/Documentation:
   Enabled: false
@@ -34,4 +34,7 @@ RSpec/PredicateMatcher:
   Enabled: false
 
 RSpec/EmptyExampleGroup:
+  Enabled: false
+
+RSpec/NestedGroups:
   Enabled: false
