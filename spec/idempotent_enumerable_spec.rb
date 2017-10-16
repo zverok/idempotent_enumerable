@@ -159,18 +159,18 @@ RSpec.describe IdempotentEnumerable do
         .and have_attributes(to_a: [2, 4, 6]) # 1 + 1, 2 + 1, 3 + 1
     end
 
-    it 'handles methods with optional arguments' do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
-      expect(collection.min(1, 2))
-        .to be_a(collection_class)
-        .and have_attributes(to_a: [2, 3]) # 1 + 1, 2 + 1
-      expect(collection.min(1)).to eq 2
-      expect(collection.min_by(1, 2, &:-@))
-        .to be_a(collection_class)
-        .and have_attributes(to_a: [6, 5]) # 5 + 1, 4 + 1
-      expect(collection.min_by(1, &:-@)).to eq 6
+    if RUBY_VERSION >= '2.2'
+      it 'handles methods with optional arguments' do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
+        expect(collection.min(1, 2))
+          .to be_a(collection_class)
+          .and have_attributes(to_a: [2, 3]) # 1 + 1, 2 + 1
+        expect(collection.min(1)).to eq 2
+        expect(collection.min_by(1, 2, &:-@))
+          .to be_a(collection_class)
+          .and have_attributes(to_a: [6, 5]) # 5 + 1, 4 + 1
+        expect(collection.min_by(1, &:-@)).to eq 6
+      end
     end
-
-    # TODO: methods with argument (grep) and optional argument (min)
   end
 
   describe 'as your regular enumerable' do

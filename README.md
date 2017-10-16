@@ -71,6 +71,23 @@ df.select(:column) { |col| col.sum > 6 }
 #    2   6   9
 ```
 
+## Reasons
+
+`IdempotentEnumerable` can be used as:
+
+* soft patch to existing Ruby collections (like `Set` or `Hash`);
+* custom reimplementations of generic collections (some `FasterArray`);
+* custom specialized collection, like [Nokogiri::XML::NodeSet](http://www.rubydoc.info/github/sparklemotion/nokogiri/Nokogiri/XML/NodeSet),
+  which quacks like `Array`, but also provides XML/CSS navigation methods. Unfortunately, if you'll
+  do something like `doc.search('a').reject { |a| a.text.include?('Google') }`, you'll receive regular
+  `Array` that haven't any useful `#at`/`#search` methods anymore.
+
+## Installation and usage
+
+`gem install idempotent_enumerable` or `gem 'idempotent_enumerable'` in your `Gemfile`.
+
+Then follow examples in this README.
+
 ## List of methods redefined
 
 ### Methods that return single collection
