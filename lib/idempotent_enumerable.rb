@@ -42,12 +42,12 @@ module IdempotentEnumerable
     each(*arg).each_slice(num) { |slice| yield(idempotently_construct(slice)) }
   end
 
-  def first(num = nil)
-    return super() unless num
-    idempotently_construct(each.first(num))
+  def first(*arg)
+    arg, num = idempotent_split_arg(arg)
+    num ? idempotently_construct(each(*arg).first(*num)) : each(*arg).first
   end
 
-  def grep(pattern, *arg, &block)
+  def grep(*arg, pattern, &block)
     idempotently_construct(each(*arg).grep(pattern, &block))
   end
 
@@ -61,26 +61,26 @@ module IdempotentEnumerable
     each(*arg).group_by(&block).map { |key, val| [key, idempotently_construct(val)] }.to_h
   end
 
-  def min(num = nil)
-    return super() unless num
-    idempotently_construct(each.min(num))
+  def min(*arg)
+    arg, num = idempotent_split_arg(arg)
+    num ? idempotently_construct(each(*arg).min(*num)) : each(*arg).min
   end
 
-  def min_by(num = nil, &block)
-    return super(&block) unless num
-    return to_enum(:min_by) unless block
-    idempotently_construct(each.min_by(num, &block))
+  def min_by(*arg, &block)
+    return to_enum(:min_by, *arg) unless block
+    arg, num = idempotent_split_arg(arg)
+    num ? idempotently_construct(each(*arg).min_by(*num, &block)) : each(*arg).min_by(&block)
   end
 
-  def max(num = nil)
-    return super() unless num
-    idempotently_construct(each.max(num))
+  def max(*arg)
+    arg, num = idempotent_split_arg(arg)
+    num ? idempotently_construct(each(*arg).max(*num)) : each(*arg).max
   end
 
-  def max_by(num = nil, &block)
-    return super(&block) unless num
-    return to_enum(:max_by) unless block
-    idempotently_construct(each.max_by(num, &block))
+  def max_by(*arg, &block)
+    return to_enum(:max_by, *arg) unless block
+    arg, num = idempotent_split_arg(arg)
+    num ? idempotently_construct(each(*arg).max_by(*num, &block)) : each(*arg).max_by(&block)
   end
 
   def partition(*arg, &block)
@@ -124,6 +124,17 @@ module IdempotentEnumerable
 
   def idempotent_enumerator(enumerator)
     Enumerator.new { |y| enumerator.each { |chunk| y << idempotently_construct(chunk) } }
+  end
+
+  # For methods like min(), with optional argument (count of min elements), AND complex collections
+  # that have args for their #each method, we need to split args to "args to #each" and "args to #min".
+  #
+  # Doesn't work if #each has variable number of args, unfortunately.
+  #
+  def idempotent_split_arg(arg)
+    arity = method(:each).arity
+    return [arg] if arity < 0 || arg.count <= arity
+    [arg[0...arity], arg[arity..-1]]
   end
 end
 

@@ -147,10 +147,28 @@ RSpec.describe IdempotentEnumerable do
         end
       end
     }
-    subject { collection.select(1, &:odd?) }
+    it 'handles methods with no own args' do
+      expect(collection.select(1, &:odd?))
+        .to be_a(collection_class)
+        .and have_attributes(to_a: [3, 5]) # 2 + 1 & 4 + 1
+    end
 
-    it { is_expected.to be_a collection_class }
-    its(:to_a) { is_expected.to eq [3, 5] } # 2 + 1 & 4 + 1
+    it 'handles methods with own arguments' do
+      expect(collection.grep(1, :even?.to_proc))
+        .to be_a(collection_class)
+        .and have_attributes(to_a: [2, 4, 6]) # 1 + 1, 2 + 1, 3 + 1
+    end
+
+    it 'handles methods with optional arguments' do
+      expect(collection.min(1, 2))
+        .to be_a(collection_class)
+        .and have_attributes(to_a: [2, 3]) # 1 + 1, 2 + 1
+      expect(collection.min(1)).to eq 2
+      expect(collection.min_by(1, 2, &:-@))
+        .to be_a(collection_class)
+        .and have_attributes(to_a: [6, 5]) # 5 + 1, 4 + 1
+      expect(collection.min_by(1, &:-@)).to eq 6
+    end
 
     # TODO: methods with argument (grep) and optional argument (min)
   end
