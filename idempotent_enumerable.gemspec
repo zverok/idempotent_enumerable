@@ -1,11 +1,11 @@
 Gem::Specification.new do |s|
-  s.name     = 'times'
+  s.name     = 'idempotent_enumerable'
   s.version  = '0.0.1'
   s.authors  = ['Victor Shepelev']
   s.email    = 'zverok.offline@gmail.com'
   s.homepage = 'https://github.com/zverok/idempotent_enumerable'
 
-  s.summary = 'Time-related value objects'
+  s.summary = 'Like Enumerable but preserves original collection class'
   s.description = <<-EOF
     IdempotentEnumerable is like Enumerable, but tries to preserve original collection type when possible.
   EOF
