@@ -97,6 +97,7 @@ RSpec.describe IdempotentEnumerable do
   it_behaves_like 'return array of collections', :partition, :odd?, [[1, 3, 5], [2, 4]]
   it_behaves_like 'return collection', :reject, :odd?, [2, 4]
   it_behaves_like 'return collection', :select, :odd?, [1, 3, 5]
+  it_behaves_like 'return collection', :find_all, :odd?, [1, 3, 5]
   it_behaves_like 'return array of collections', :slice_after, :even?.to_proc, nil,
                   [[1, 2], [3, 4], [5]], since: '2.2'
   it_behaves_like 'return array of collections', :slice_after, :even?,
@@ -191,19 +192,10 @@ RSpec.describe IdempotentEnumerable do
           }
         }
 
-        context '#map' do
-          subject { collection.map(&:to_s) }
-
-          it { is_expected.to be_a collection_class }
-          its(:to_a) { is_expected.to eq %w[1 2 3 4 5] }
-        end
-
-        context '#flat_map' do
-          subject { collection.flat_map { |i| [i, i] } }
-
-          it { is_expected.to be_a collection_class }
-          its(:to_a) { is_expected.to eq [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] }
-        end
+        it_behaves_like 'return collection', :map, :to_s, %w[1 2 3 4 5]
+        it_behaves_like 'return collection', :collect, :to_s, %w[1 2 3 4 5]
+        it_behaves_like 'return collection', :flat_map, ->(i) { [i, i] }, [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
+        it_behaves_like 'return collection', :collect_concat, ->(i) { [i, i] }, [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
       end
 
       context 'conditional' do
@@ -214,10 +206,7 @@ RSpec.describe IdempotentEnumerable do
         }
 
         context 'matches' do
-          subject { collection.map(&:-@) }
-
-          it { is_expected.to be_a collection_class }
-          its(:to_a) { is_expected.to eq [-1, -2, -3, -4, -5] }
+          it_behaves_like 'return collection', :map, :-@, [-1, -2, -3, -4, -5]
         end
 
         context 'not matches' do
@@ -234,12 +223,7 @@ RSpec.describe IdempotentEnumerable do
           }
         }
 
-        context '#map' do
-          subject { collection.map(&:to_s) }
-
-          it { is_expected.to be_a collection_class }
-          its(:to_a) { is_expected.to eq %w[1 2 3 4 5] }
-        end
+        it_behaves_like 'return collection', :map, :to_s, %w[1 2 3 4 5]
 
         context '#flat_map' do
           subject { collection.flat_map { |i| [i, i] } }

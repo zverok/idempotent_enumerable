@@ -14,6 +14,8 @@ module IdempotentEnumerable
     end
   end
 
+  alias find_all select
+
   def chunk(*arg, &block)
     # FIXME: should return enumerator
     return to_enum(:chunk, *arg) unless block

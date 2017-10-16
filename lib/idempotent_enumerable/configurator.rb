@@ -10,10 +10,10 @@ module IdempotentEnumerable
       @constructor || :new
     end
 
-    def redefine_map!(only: %i[map flat_map], all: nil)
-      only = Array(only)
-      redefine(:map, all) if only.include?(:map)
-      redefine(:flat_map, all) if only.include?(:flat_map)
+    REDEFINEABLE = %i[map flat_map collect collect_concat].freeze
+
+    def redefine_map!(only: REDEFINEABLE, all: nil)
+      (Array(only) & REDEFINEABLE).each { |method| redefine(method, all) }
       self
     end
 
@@ -21,6 +21,7 @@ module IdempotentEnumerable
 
     def redefine(method, all)
       @host.send(:define_method, method) do |*arg, &block|
+        return to_enum(method) unless block
         res = each(*arg).send(method, &block)
         if !all || res.all?(&all)
           idempotently_construct(res)
