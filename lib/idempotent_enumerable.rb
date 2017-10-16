@@ -127,7 +127,8 @@ module IdempotentEnumerable
   end
 
   # For methods like min(), with optional argument (count of min elements), AND complex collections
-  # that have args for their #each method, we need to split args to "args to #each" and "args to #min".
+  # that have args for their #each method, we need to split args to "args to #each" and
+  # "args to #min".
   #
   # Doesn't work if #each has variable number of args, unfortunately.
   #

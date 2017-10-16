@@ -13,6 +13,9 @@ AllCops:
     - '*.gemspec'
   DisplayCopNames: true
 
+Metrics/ModuleLength:
+  Enabled: false
+
 Metrics/LineLength:
   Max: 100
   Exclude:

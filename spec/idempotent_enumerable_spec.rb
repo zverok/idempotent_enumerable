@@ -159,7 +159,7 @@ RSpec.describe IdempotentEnumerable do
         .and have_attributes(to_a: [2, 4, 6]) # 1 + 1, 2 + 1, 3 + 1
     end
 
-    it 'handles methods with optional arguments' do
+    it 'handles methods with optional arguments' do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
       expect(collection.min(1, 2))
         .to be_a(collection_class)
         .and have_attributes(to_a: [2, 3]) # 1 + 1, 2 + 1
